@@ -1,0 +1,520 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAD.QUAL - Ultimate Bass Boosted Audio Destroyer</title>
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
+  <style>
+    :root {
+      --rainbow-1: #ff0000;
+      --rainbow-2: #ff8000;
+      --rainbow-3: #ffff00;
+      --rainbow-4: #00ff00;
+      --rainbow-5: #00ffff;
+      --rainbow-6: #0000ff;
+      --rainbow-7: #8000ff;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #000;
+      font-family: 'Comic Sans MS', cursive;
+      color: #fff;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .crt::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.4));
+      pointer-events: none;
+    }
+
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        rgba(0,255,0,0.1) 1px,
+        transparent 2px
+      );
+      animation: scan 1s linear infinite;
+      pointer-events: none;
+    }
+
+    header {
+      text-align: center;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 4rem;
+      text-shadow: 4px 4px var(--rainbow-1),
+                   8px 8px var(--rainbow-3),
+                   12px 12px var(--rainbow-5);
+      transform: rotate(-5deg);
+      margin: 0;
+      animation: titleGlitch 0.4s infinite;
+    }
+
+    h1 sup {
+      font-size: 1.5rem;
+      vertical-align: super;
+      color: var(--rainbow-5);
+      text-shadow: 0 0 10px var(--rainbow-5);
+    }
+
+    .upload-container {
+      border: 4px dashed;
+      padding: 2rem;
+      margin: 2rem;
+      border-image: linear-gradient(
+        45deg,
+        var(--rainbow-1),
+        var(--rainbow-3),
+        var(--rainbow-5),
+        var(--rainbow-7)
+      ) 1;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    input[type="file"] {
+      font-size: 1.5rem;
+      color: #fff;
+    }
+
+    button {
+      background: linear-gradient(45deg, #ff00ff, #00ffff);
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      font-family: inherit;
+      margin: 1rem;
+      transform: skew(-10deg);
+      transition: 0.3s all;
+    }
+
+    button:hover {
+      filter: hue-rotate(90deg);
+      transform: skew(-10deg) scale(1.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @keyframes scan {
+      from { background-position: 0 0; }
+      to { background-position: 0 100%; }
+    }
+
+    @keyframes titleGlitch {
+      0% { transform: rotate(-5deg) translate(2px, 1px); }
+      25% { transform: rotate(-5deg) translate(-1px, -2px); }
+      50% { transform: rotate(-5deg) translate(3px, -1px); }
+      75% { transform: rotate(-5deg) translate(-2px, 2px); }
+      100% { transform: rotate(-5deg) translate(0px, 0px); }
+    }
+
+    @keyframes backgroundTransition {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    .rainbow-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        45deg,
+        var(--rainbow-1),
+        var(--rainbow-2),
+        var(--rainbow-3),
+        var(--rainbow-4),
+        var(--rainbow-5),
+        var(--rainbow-6),
+        var(--rainbow-7)
+      );
+      background-size: 400% 400%;
+      animation: backgroundTransition 10s linear infinite;
+      mix-blend-mode: overlay;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .changelog {
+      margin-top: 1rem;
+      border: 2px solid;
+      border-image: linear-gradient(45deg, var(--rainbow-7), var(--rainbow-1)) 1;
+      padding: 0.5rem;
+      background: rgba(0,0,0,0.8);
+      max-width: 400px;
+      transition: 0.3s all;
+    }
+
+    .changelog[open] {
+      transform: rotate(-1deg) scale(1.05);
+    }
+
+    .changelog summary {
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #0ff;
+      text-shadow: 0 0 10px #0ff;
+    }
+
+    .changelog ul {
+      list-style: "🔥 ";
+      padding-left: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .changelog li {
+      margin: 0.5rem 0;
+      text-shadow: 0 0 5px var(--rainbow-3);
+    }
+    
+    /* New styles for the visualizer */
+    #visualizer-container {
+      width: 90%;
+      margin: 2rem auto;
+    }
+
+    #visualizer {
+      width: 100%;
+      height: 150px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .vis-bar {
+      fill: #0ff;
+    }
+  </style>
+</head>
+<body class="crt">
+  <div class="scanlines"></div>
+  <div class="rainbow-bg"></div>
+  
+  <header>
+    <h1>BAD.QUAL <sup>V3.4</sup></h1>
+    <h2>ULTIMATE BASS BOOSTED MEME MACHINE</h2>
+  </header>
+
+  <div class="upload-container">
+    <input type="file" id="audioInput" accept="audio/*">
+    <div class="button-group">
+      <button onclick="togglePlayback()">PLZ CLIK 4 BASS</button>
+      <button onclick="downloadProcessed()">DOWNLOAD BASSED MP3</button>
+    </div>
+  </div>
+  
+  <div id="visualizer-container">
+    <svg id="visualizer" viewBox="0 0 320 150" preserveAspectRatio="none"></svg>
+  </div>
+
+  <details class="changelog" open>
+    <summary>Changelog (v3.4)</summary>
+    <ul>
+      <li>Added changelog for da memez (u asked for it, no more liars!)</li>
+      <li>Audio processing now even more catastrophic and bass boosted to the max!</li>
+      <li>Download button now slaps a fresh timestamped MP3 file!</li>
+      <li>Tape wobble and bitcrusher effects upgraded for extra destruction!</li>
+      <li>NEW: Animated audio visualizer for extra flair!</li>
+      <li>REMOVED: Lolcat element removed because it sucks</li>
+    </ul>
+  </details>
+
+  <script>
+    let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let analyser = audioContext.createAnalyser();
+    analyser.fftSize = 64; // creates 32 frequency bins for our visualizer
+    let sourceNode = null;
+    let isPlaying = false;
+    let currentAudioBuffer = null;
+    let wobbleNode = null;
+
+    async function loadAudio(file) {
+      if (sourceNode) sourceNode.stop();
+      
+      const arrayBuffer = await file.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      currentAudioBuffer = audioBuffer; // Store for downloading
+      
+      // Create audio graph
+      sourceNode = audioContext.createBufferSource();
+      sourceNode.buffer = audioBuffer;
+      
+      // Create EXTREME distortion
+      const distortion = audioContext.createWaveShaper();
+      distortion.curve = makeDistortionCurve(8000);
+      distortion.oversample = '4x';
+      
+      // MEGA BASS OVERDRIVE
+      const bassBoost = audioContext.createBiquadFilter();
+      bassBoost.type = 'lowshelf';
+      bassBoost.frequency.setValueAtTime(200, audioContext.currentTime);
+      bassBoost.gain.setValueAtTime(60, audioContext.currentTime);
+      
+      // DESTRUCTIVE BITCRUSHER
+      const bitcrusher = new BitCrusher(audioContext, {
+        bits: 2,
+        normfreq: 0.05
+      });
+      
+      // ADD SAMPLE RATE DESTROYER
+      const sampleRateReducer = new SampleRateReducer(audioContext, {
+        reduction: 8
+      });
+      
+      // TAPE WOBBLE EFFECT
+      wobbleNode = audioContext.createGain();
+      const wobbleOsc = audioContext.createOscillator();
+      wobbleOsc.type = 'sine';
+      wobbleOsc.frequency.setValueAtTime(0.5, audioContext.currentTime);
+      const wobbleDepth = audioContext.createGain();
+      wobbleDepth.gain.setValueAtTime(0.02, audioContext.currentTime);
+      wobbleOsc.connect(wobbleDepth).connect(wobbleNode.gain);
+      wobbleOsc.start();
+      
+      // Create final limiter
+      const limiter = audioContext.createDynamicsCompressor();
+      limiter.threshold.setValueAtTime(-20, audioContext.currentTime);
+      limiter.ratio.setValueAtTime(20, audioContext.currentTime);
+      
+      // Connect nodes: route through our analyser then to the destination for live visualization
+      sourceNode
+        .connect(distortion)
+        .connect(bassBoost)
+        .connect(bitcrusher.input)
+        .connect(sampleRateReducer.input)
+        .connect(wobbleNode)
+        .connect(limiter)
+        .connect(analyser)
+        .connect(audioContext.destination);
+
+      sourceNode.start(0);
+      isPlaying = true;
+    }
+
+    class SampleRateReducer {
+      constructor(context, props) {
+        this.input = context.createGain();
+        this.output = context.createGain();
+        this.reduction = props.reduction || 4;
+        this.phase = 0;
+        this.lastValue = 0;
+        
+        this.scriptNode = context.createScriptProcessor(4096, 1, 1);
+        this.scriptNode.onaudioprocess = e => this.process(e);
+        this.input.connect(this.scriptNode);
+        this.scriptNode.connect(this.output);
+      }
+      
+      process(e) {
+        const input = e.inputBuffer.getChannelData(0);
+        const output = e.outputBuffer.getChannelData(0);
+        for (let i = 0; i < input.length; i++) {
+          if (this.phase % this.reduction === 0) {
+            this.lastValue = input[i];
+          }
+          output[i] = this.lastValue;
+          this.phase++;
+        }
+      }
+    }
+
+    function makeDistortionCurve(amount) {
+      const k = typeof amount === 'number' ? amount : 50;
+      const n = 44100;
+      const curve = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        const x = (i * 2) / n - 1;
+        curve[i] = (Math.atan(k * x) + Math.sin(k * x * 0.5)) * 1.2;
+      }
+      return curve;
+    }
+
+    class BitCrusher {
+      constructor(context, props) {
+        this.input = context.createGain();
+        this.output = context.createGain();
+        
+        this.bits = props.bits || 8;
+        this.normfreq = props.normfreq || 0.1;
+        
+        this.phaser = 0;
+        this.lastValue = 0;
+        
+        const scriptNode = context.createScriptProcessor(4096, 1, 1);
+        scriptNode.onaudioprocess = e => this.process(e);
+        
+        this.input.connect(scriptNode);
+        scriptNode.connect(this.output);
+      }
+
+      process(e) {
+        const input = e.inputBuffer.getChannelData(0);
+        const output = e.outputBuffer.getChannelData(0);
+        const step = Math.pow(0.5, this.bits);
+        const phaserIncr = this.normfreq * 44100;
+        
+        for (let i = 0; i < input.length; i++) {
+          this.phaser += phaserIncr;
+          if (this.phaser >= 1) {
+            this.phaser--;
+            this.lastValue = step * Math.floor(input[i] / step + 0.5);
+          }
+          output[i] = this.lastValue;
+        }
+      }
+    }
+
+    async function downloadProcessed() {
+      if (!currentAudioBuffer) {
+        alert('UPLOAD FILE FIRST PLZ!');
+        return;
+      }
+
+      const offlineContext = new OfflineAudioContext(
+        currentAudioBuffer.numberOfChannels,
+        currentAudioBuffer.length,
+        currentAudioBuffer.sampleRate
+      );
+
+      const source = offlineContext.createBufferSource();
+      source.buffer = currentAudioBuffer;
+
+      // Recreate processing chain WITH NEW DESTRUCTION
+      const distortion = offlineContext.createWaveShaper();
+      distortion.curve = makeDistortionCurve(8000);
+      distortion.oversample = '4x';
+
+      const bassBoost = offlineContext.createBiquadFilter();
+      bassBoost.type = 'lowshelf';
+      bassBoost.frequency.setValueAtTime(200, offlineContext.currentTime);
+      bassBoost.gain.setValueAtTime(60, offlineContext.currentTime);
+
+      const bitcrusher = new BitCrusher(offlineContext, { 
+        bits: 2,
+        normfreq: 0.05
+      });
+      
+      const sampleRateReducer = new SampleRateReducer(offlineContext, {
+        reduction: 8
+      });
+      
+      const wobbleNode = offlineContext.createGain();
+      const wobbleOsc = offlineContext.createOscillator();
+      wobbleOsc.type = 'sine';
+      wobbleOsc.frequency.setValueAtTime(0.5, offlineContext.currentTime);
+      const wobbleDepth = offlineContext.createGain();
+      wobbleDepth.gain.setValueAtTime(0.02, offlineContext.currentTime);
+      wobbleOsc.connect(wobbleDepth).connect(wobbleNode.gain);
+      wobbleOsc.start();
+
+      const limiter = offlineContext.createDynamicsCompressor();
+      limiter.threshold.setValueAtTime(-20, offlineContext.currentTime);
+      limiter.ratio.setValueAtTime(20, offlineContext.currentTime);
+
+      source.connect(distortion)
+        .connect(bassBoost)
+        .connect(bitcrusher.input)
+        .connect(sampleRateReducer.input)
+        .connect(wobbleNode)
+        .connect(limiter)
+        .connect(offlineContext.destination);
+
+      source.start(0);
+
+      try {
+        const renderedBuffer = await offlineContext.startRendering();
+        const sampleRate = renderedBuffer.sampleRate;
+        const channels = renderedBuffer.numberOfChannels;
+        const left = renderedBuffer.getChannelData(0);
+        const right = channels > 1 ? renderedBuffer.getChannelData(1) : left;
+
+        const mp3Encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128);
+        const sampleBlockSize = 1152;
+        const mp3Data = [];
+
+        // Convert to 16-bit PCM and encode
+        const samples = new Int16Array(left.length * channels);
+        for (let i = 0; i < left.length; i++) {
+          samples[i * channels] = Math.max(-1, Math.min(1, left[i])) * 32767;
+          if (channels > 1) samples[i * channels + 1] = Math.max(-1, Math.min(1, right[i])) * 32767;
+        }
+
+        for (let i = 0; i < samples.length; i += sampleBlockSize * channels) {
+          const chunk = samples.subarray(i, i + sampleBlockSize * channels);
+          const mp3buf = mp3Encoder.encodeBuffer(chunk);
+          if (mp3buf.length > 0) mp3Data.push(mp3buf);
+        }
+
+        const finalMp3 = mp3Encoder.flush();
+        if (finalMp3.length > 0) mp3Data.push(finalMp3);
+
+        const blob = new Blob(mp3Data, { type: 'audio/mp3' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `BAD_QUAL_${Date.now()}.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 100);
+      } catch (err) {
+        alert('FAILED 2 BASS DOWNLOAD ');
+        console.error('Bass destruction failed:', err);
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('audioInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) loadAudio(file);
+    });
+
+    function togglePlayback() {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      if (sourceNode && isPlaying) {
+        sourceNode.stop();
+        isPlaying = false;
+      } else if (sourceNode && !isPlaying) {
+        loadAudio(document.getElementById('audioInput').files[0]);
+      }
+    }
+
+    // Start audio context on first user interaction
+    document.addEventListener('click', () => {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    }, { once: true });
+  </script>
+  <script src="visualizer.js"></script>
+</body>
+</html>

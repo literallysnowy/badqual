@@ -1,9 +1,9 @@
-### Bad.Qual
+## 🎵 Bad.Qual – The Ultimate Bad Audio Generator
 
-## watz diz
+# 🔥 What is Bad.Qual?
+Bad.Qual is a website designed to absolutely destroy your audio quality. Whether you want your sound to be crunchy, distorted, or downright unlistenable, we've got you covered. 🎤💀
 
-bad.qual is a site that will make ur audio INSANELY BAD 
+# 💻 Open-Source?
+Yep! You’re free to use, modify, and experiment with the source code—no credit required (but always appreciated ❤️).
 
-## can i use the source
-
-yes, no need to credit me unless you want to
+Let the audio chaos begin! 🚀
